@@ -11,12 +11,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.viewbinding.ViewBinding
-import com.emamagic.mvi.MainContract
 import kotlinx.coroutines.flow.collect
 
-abstract class BaseFragment<VB: ViewBinding ,STATE: BaseContract.State,EFFECT: BaseContract.Effect,EVENT: BaseContract.Event,VM: BaseViewModel<STATE, EFFECT, EVENT>>: Fragment() {
+abstract class BaseFragment<VB : ViewBinding, STATE : BaseContract.State, EFFECT : BaseContract.Effect, EVENT : BaseContract.Event, VM : BaseViewModel<STATE, EFFECT, EVENT>> :
+    Fragment(), BaseContract.State, BaseContract.Effect {
 
-    private  var _binding: VB? = null
+    private var _binding: VB? = null
     protected val binding get() = _binding!!
     private lateinit var loading: FrameLayout
     private var callback: OnBackPressedCallback? = null
@@ -26,7 +26,7 @@ abstract class BaseFragment<VB: ViewBinding ,STATE: BaseContract.State,EFFECT: B
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = getFragmentBinding(inflater ,container)
+        _binding = getFragmentBinding(inflater, container)
         return binding.root
     }
 
@@ -35,7 +35,8 @@ abstract class BaseFragment<VB: ViewBinding ,STATE: BaseContract.State,EFFECT: B
         hideLoading()
         lifecycleScope.launchWhenStarted {
             viewModel.uiState.collect {
-                renderViewState(it) }
+                renderViewState(it)
+            }
         }
 
         lifecycleScope.launchWhenStarted {
@@ -44,24 +45,27 @@ abstract class BaseFragment<VB: ViewBinding ,STATE: BaseContract.State,EFFECT: B
 
     }
 
-    protected fun showLoading(isDim: Boolean = false){
-        if (loading.visibility != View.VISIBLE){
+
+
+
+
+    protected fun showLoading(isDim: Boolean = false) {
+        if (loading.visibility != View.VISIBLE) {
             if (isDim) loading.setBackgroundColor(Color.parseColor("#cc000000"))
             loading.visibility = View.VISIBLE
         }
     }
 
-    protected fun hideLoading(){
-        if (loading.visibility != View.GONE){
-            loading.visibility = View.GONE
-        }
-    }
-
+//    protected fun hideLoading() {
+//        if (loading.visibility != View.GONE) {
+//            loading.visibility = View.GONE
+//        }
+//    }
 
 
     abstract val viewModel: VM
 
-    abstract fun getFragmentBinding(inflater: LayoutInflater ,container: ViewGroup?): VB
+    abstract fun getFragmentBinding(inflater: LayoutInflater, container: ViewGroup?): VB
 
     abstract fun renderViewState(viewState: STATE)
 
@@ -83,7 +87,7 @@ abstract class BaseFragment<VB: ViewBinding ,STATE: BaseContract.State,EFFECT: B
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        if (callback != null){
+        if (callback != null) {
             callback?.isEnabled = false
             callback?.remove()
         }
