@@ -2,7 +2,6 @@ package com.emamagic.mvi.base
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.emamagic.mvi.bansa.Reducer
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -50,8 +49,10 @@ abstract class BaseViewModel<STATE : BaseContract.State, EFFECT : BaseContract.E
 
     private fun subscribeEvents() = viewModelScope.launch {
         uiEvent.collect {
-            Reducer<STATE> { state, action ->
-                reducer(it)
+            object : Reducer<STATE> {
+                override fun reduce(state: STATE, event: BaseContract.Event): STATE {
+                    return reducer(it)
+                }
             }
 
         }

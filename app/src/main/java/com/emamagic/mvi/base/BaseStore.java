@@ -1,4 +1,6 @@
-package com.emamagic.mvi.bansa;
+package com.emamagic.mvi.base;
+
+import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,9 +14,9 @@ public class BaseStore<S> implements Store<S> {
     public List<NextDispatcher> dispatchers;
     private final Middleware<S> dispatcher = new Middleware<S>() {
         @Override
-        public void dispatch(Store<S> store, Action action, NextDispatcher next) {
+        public void dispatch(Store<S> store, @NonNull BaseContract.Event event, NextDispatcher next) {
             synchronized (this) {
-                currentState = reducer.reduce(store.getState(), action);
+                currentState = reducer.reduce(store.getState(), event);
             }
             for (int i = 0; i < subscribers.size(); i++) {
                 subscribers.get(i).onStateChange(currentState);
@@ -39,13 +41,13 @@ public class BaseStore<S> implements Store<S> {
     }
 
     @Override
-    public S dispatch(Action action) {
-        this.dispatchers.get(0).dispatch(action);
+    public S dispatch(BaseContract.Event event) {
+        this.dispatchers.get(0).dispatch(event);
         return currentState;
     }
 
     @Override
-    public Subscription subscribe(final Subscriber<S> subscriber) {
+    public Subscription subscribe(@NonNull final Subscriber<S> subscriber) {
         this.subscribers.add(subscriber);
         return new Subscription() {
             @Override
@@ -60,8 +62,8 @@ public class BaseStore<S> implements Store<S> {
         LinkedList<NextDispatcher> dispatchers = new LinkedList<>();
 
         dispatchers.add(new NextDispatcher() {
-            public void dispatch(Action action) {
-                dispatcher.dispatch(store, action, null);
+            public void dispatch(@NonNull BaseContract.Event event) {
+                dispatcher.dispatch(store, event, null);
             }
         });
 
@@ -70,8 +72,8 @@ public class BaseStore<S> implements Store<S> {
             final NextDispatcher next = dispatchers.get(0);
             dispatchers.add(0, new NextDispatcher() {
                 @Override
-                public void dispatch(Action action) {
-                    middleware.dispatch(store, action, next);
+                public void dispatch(@NonNull BaseContract.Event event) {
+                    middleware.dispatch(store, event, next);
                 }
             });
         }
