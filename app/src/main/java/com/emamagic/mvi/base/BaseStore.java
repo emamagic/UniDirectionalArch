@@ -41,11 +41,12 @@ public class BaseStore<S> implements Store<S> {
     }
 
     @Override
-    public S dispatch(BaseContract.Event event) {
+    public S dispatch(@NonNull BaseContract.Event event) {
         this.dispatchers.get(0).dispatch(event);
         return currentState;
     }
 
+    @NonNull
     @Override
     public Subscription subscribe(@NonNull final Subscriber<S> subscriber) {
         this.subscribers.add(subscriber);
