@@ -6,18 +6,16 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-abstract class BaseViewModel<STATE : BaseContract.State, EFFECT : BaseContract.Effect, EVENT : BaseContract.Event> :
+abstract class BaseViewModel<STATE : BaseContract.State, EVENT : BaseContract.Event> :
     ViewModel(), BaseContract.Event {
 
     init {
         subscribeEvents()
     }
 
-    // Create Initial State of View
     private val initialState: STATE by lazy { createInitialState() }
     abstract fun createInitialState(): STATE
 
-    // Get Current State
     val currentState: STATE
         get() = uiState.value
 
@@ -27,7 +25,7 @@ abstract class BaseViewModel<STATE : BaseContract.State, EFFECT : BaseContract.E
     private val _uiEvent: MutableSharedFlow<EVENT> = MutableSharedFlow()
     val uiEvent = _uiEvent.asSharedFlow()
 
-    private val _uiEffect: Channel<EFFECT> = Channel()
+    private val _uiEffect: Channel<BaseContract.Effect> = Channel()
     val uiEffect = _uiEffect.receiveAsFlow()
 
 
@@ -41,11 +39,10 @@ abstract class BaseViewModel<STATE : BaseContract.State, EFFECT : BaseContract.E
         _uiState.value = newState
     }
 
-    protected fun setEffect(builder: () -> EFFECT) {
+    protected fun setEffect(builder: () -> BaseContract.Effect) {
         val effectValue = builder()
         viewModelScope.launch { _uiEffect.send(effectValue) }
     }
-
 
     private fun subscribeEvents() = viewModelScope.launch {
         uiEvent.collect {
@@ -54,7 +51,6 @@ abstract class BaseViewModel<STATE : BaseContract.State, EFFECT : BaseContract.E
                     return reducer(it)
                 }
             }
-
         }
     }
 

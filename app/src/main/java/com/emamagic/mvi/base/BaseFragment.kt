@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
@@ -13,8 +14,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewbinding.ViewBinding
 import kotlinx.coroutines.flow.collect
 
-abstract class BaseFragment<VB : ViewBinding, STATE : BaseContract.State, EFFECT : BaseContract.Effect, EVENT : BaseContract.Event, VM : BaseViewModel<STATE, EFFECT, EVENT>> :
-    Fragment(), BaseContract.State, BaseContract.Effect {
+abstract class BaseFragment<VB : ViewBinding, STATE : BaseContract.State, EVENT : BaseContract.Event, VM : BaseViewModel<STATE, EVENT>> :
+    Fragment() {
 
     private var _binding: VB? = null
     protected val binding get() = _binding!!
@@ -42,12 +43,7 @@ abstract class BaseFragment<VB : ViewBinding, STATE : BaseContract.State, EFFECT
         lifecycleScope.launchWhenStarted {
             viewModel.uiEffect.collect { renderViewEffect(it) }
         }
-
     }
-
-
-
-
 
     protected fun showLoading(isDim: Boolean = false) {
         if (loading.visibility != View.VISIBLE) {
@@ -56,11 +52,11 @@ abstract class BaseFragment<VB : ViewBinding, STATE : BaseContract.State, EFFECT
         }
     }
 
-//    protected fun hideLoading() {
-//        if (loading.visibility != View.GONE) {
-//            loading.visibility = View.GONE
-//        }
-//    }
+    protected fun hideLoading() {
+        if (loading.visibility != View.GONE) {
+            loading.visibility = View.GONE
+        }
+    }
 
 
     abstract val viewModel: VM
@@ -69,9 +65,15 @@ abstract class BaseFragment<VB : ViewBinding, STATE : BaseContract.State, EFFECT
 
     abstract fun renderViewState(viewState: STATE)
 
-
-    protected open fun renderViewEffect(viewEffect: EFFECT) {
-
+    protected open fun renderViewEffect(viewEffect: BaseContract.Effect) {
+        when(viewEffect) {
+            is BaseContract.Effect.Loading -> {
+                if (viewEffect.isLoading) showLoading() else hideLoading()
+            }
+            is BaseContract.Effect.ShowToast -> {
+                Toast.makeText(requireContext(), viewEffect.message, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
 

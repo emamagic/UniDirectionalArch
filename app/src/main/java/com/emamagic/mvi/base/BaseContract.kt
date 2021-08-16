@@ -8,22 +8,23 @@ interface BaseContract {
         fun onError(throwable: Throwable)
     }
 
-    interface State {
-        fun showLoading(@StringRes resId: Int)
+    sealed class State {
+        data class ShowLoading(@StringRes val resId: Int): State()
 
-        fun hideLoading()
+        object HideLoading: State()
 
-        fun showMessage(@StringRes titleRes: Int, @StringRes messageRes: Int)
+        data class ShowMessageWithId(@StringRes val titleRes: Int, @StringRes val messageRes: Int)
 
-        fun showMessage(title: String, message: String)
+        data class ShowMessage(val title: String, val message: String): State()
 
-        fun showErrorMessage(@StringRes messageRes: Int)
+        data class ShowErrorMessageWithId(@StringRes val messageRes: Int)
 
-        fun showErrorMessage(message: String)
+        data class ShowErrorMessage(val message: String)
     }
 
-    interface Effect {
-        fun showToast(message: String)
-        fun loading(isLoading: Boolean)
+    sealed class Effect {
+        data class ShowToast(val message: String): Effect()
+
+        data class Loading(val isLoading: Boolean): Effect()
     }
 }
